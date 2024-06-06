@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -35,6 +36,7 @@ public class Program
             await builder.AddApplicationAsync<BookStoreBlazorModule>();
             var app = builder.Build();
             await app.InitializeApplicationAsync();
+            //app.MapAdditionalIdentityEndpoints();
             await app.RunAsync();
             return 0;
         }

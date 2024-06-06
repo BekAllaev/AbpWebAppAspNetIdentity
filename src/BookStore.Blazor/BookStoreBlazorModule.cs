@@ -42,6 +42,11 @@ using Volo.Abp.UI;
 using Volo.Abp.UI.Navigation;
 using Volo.Abp.UI.Navigation.Urls;
 using Volo.Abp.VirtualFileSystem;
+using BookStore.Blazor.Account;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
+using BookStore.Blazor.Data;
+using OMSBlazor.EntityFrameworkCore;
 
 namespace BookStore.Blazor;
 
@@ -107,6 +112,35 @@ public class BookStoreBlazorModule : AbpModule
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)
     {
+        context.Services.AddCascadingAuthenticationState();
+
+        context.Services.AddScoped<IdentityUserAccessor>();
+
+        context.Services.AddScoped<IdentityRedirectManager>();
+
+        context.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+        context.Services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = IdentityConstants.ApplicationScheme;
+            options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+        })
+        .AddIdentityCookies();
+
+        /*
+        var connectionString = context.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+        context.Services.AddDbContext<BookStoreIdentityContext>(options =>
+            options.UseSqlServer(connectionString));
+        */
+
+        context.Services.AddIdentityCore<BookStoreIdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            .AddEntityFrameworkStores<BookStoreIdentityDbContext>()
+            .AddSignInManager()
+            .AddDefaultTokenProviders();
+
+        context.Services.AddSingleton<IEmailSender<BookStoreIdentityUser>, IdentityNoOpEmailSender>();
+
         context.Services.Configure<AbpClaimsPrincipalFactoryOptions>(options =>
         {
             options.IsDynamicClaimsEnabled = true;
